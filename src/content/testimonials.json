@@ -1,0 +1,23 @@
+{
+  "_note": "Real testimonials from video transcripts. Photos TODO: Watson to save stills from testimonial videos as /public/testimonials/earline.jpg and /public/testimonials/jackie.jpg.",
+  "testimonials": [
+    {
+      "name": "Earline M.",
+      "neighborhood": "Strawberry Mansion",
+      "address": "2046 W Boston St",
+      "quote": "My guardian angel came to the rescue. We had to go through probate because Mom passed, then my brother passed. Watson came into the house with gloves, sat down and started looking for the will. He even picked me up to bring me down to sign the papers. Talking about somebody really there for you \u2014 he's a good brother.",
+      "shortQuote": "My guardian angel came to the rescue. Talking about somebody really there for you \u2014 he's a good brother.",
+      "outcome": "Closed Sept 2023 \u00b7 Inherited probate rowhome \u00b7 Referred by a friend",
+      "photo": "/testimonials/earline.jpg"
+    },
+    {
+      "name": "Jacqueline S.",
+      "neighborhood": "West Oak Lane",
+      "address": "7319 N 20th St",
+      "quote": "My husband lived in that house since he was 12. He inherited it from his mother, then I inherited it from him. The repairs were just too much for me. Watson was patient, he was attentive to what I wanted, and he wasn't rushing me. He even covered gas money when I needed to get to closing. A very humble man, good at what he does.",
+      "shortQuote": "Watson was patient. He was attentive. He wasn't rushing me. A very humble man, good at what he does.",
+      "outcome": "Closed July 2023 \u00b7 Inherited husband's family home \u00b7 Found us on Google",
+      "photo": "/testimonials/jackie.jpg"
+    }
+  ]
+}

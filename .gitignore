@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env*.local
+.vercel
+*.log
+.DS_Store
+next-env.d.ts.bak
+.turbo
+coverage
+
+# Raw source assets (keep out of repo — already copied into public/)
+covenant-logos/
+.playwright-mcp/
+*.tsbuildinfo

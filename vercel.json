@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/cron/blog-draft",           "schedule": "0 10 * * 1" },
+    { "path": "/api/cron/seo-audit",            "schedule": "0 1 * * 1" },
+    { "path": "/api/cron/lighthouse-check",     "schedule": "0 7 * * *" },
+    { "path": "/api/cron/lead-qa",              "schedule": "0 12 * * *" },
+    { "path": "/api/cron/neighborhood-refresh", "schedule": "0 11 1 * *" },
+    { "path": "/api/cron/lead-summary",         "schedule": "0 11 * * *" }
+  ]
+}

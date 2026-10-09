@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>The Build — Covenant Homes Philly</title>
+<meta name="description" content="How I rebuilt covenanthomesphilly.com from a $99/month Carrot template into a custom Next.js site — in one weekend, with Claude Code." />
+<meta property="og:title" content="The Build — How I Replaced My Carrot Site in 48 Hours" />
+<meta property="og:description" content="Vibe Coding walkthrough: Carrot template → custom Next.js. Gold, black, and white. Real data. One weekend." />
+<meta property="og:image" content="https://covenanthomesphilly.com/opengraph-image" />
+<link rel="icon" href="https://covenanthomesphilly.com/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#B8A055;
+    --gold-dark:#96823F;
+    --gold-darker:#7B6A30;
+    --gold-100:#F1E6C1;
+    --gold-50:#FAF5E7;
+    --ink:#0A0A0A;
+    --ink-600:#1F1F1F;
+    --body:#373A3C;
+    --muted:#6B6660;
+    --surface:#FFFFFF;
+    --cream:#FAF7EE;
+    --border:#E8E3D5;
+    --font-display:'Playfair Display', Georgia, serif;
+    --font-sans:'Inter', system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+  body{
+    margin:0;
+    font-family:var(--font-sans);
+    color:var(--body);
+    background:var(--cream);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    font-feature-settings:"kern","liga";
+  }
+  ::selection{background:var(--gold);color:var(--ink)}
+  h1,h2,h3,h4{font-family:var(--font-display);color:var(--ink);letter-spacing:-0.02em;font-weight:500;margin:0}
+  h1{font-size:clamp(2.75rem, 6vw, 5rem);line-height:1.02}
+  h2{font-size:clamp(1.875rem, 3.5vw, 3rem);line-height:1.1}
+  h3{font-size:clamp(1.25rem, 1.8vw, 1.75rem);line-height:1.25}
+  p{margin:0;line-height:1.65}
+  a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--gold);padding-bottom:2px}
+  a:hover{border-color:var(--ink)}
+
+  /* ------- Slide ------- */
+  .slide{
+    min-height:100vh;
+    width:100%;
+    padding:clamp(2.5rem, 5vw, 5rem) clamp(1.5rem, 4vw, 5rem);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    position:relative;
+    scroll-snap-align:start;
+    border-bottom:1px solid var(--border);
+  }
+  .slide--dark{background:var(--ink);color:rgba(255,255,255,0.85)}
+  .slide--dark h1,.slide--dark h2,.slide--dark h3,.slide--dark h4{color:#fff}
+  .slide--dark ::selection{background:var(--gold);color:var(--ink)}
+  .slide--cream{background:var(--cream)}
+  .slide--white{background:#fff}
+
+  /* Top rule */
+  .slide::before{
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:3px;
+    background:var(--gold);
+  }
+  .slide--dark::before{height:4px}
+
+  /* Masthead bar at top of each slide */
+  .masthead{
+    position:absolute;
+    top:clamp(1rem, 2vw, 1.75rem);
+    left:clamp(1.5rem, 4vw, 5rem);
+    right:clamp(1.5rem, 4vw, 5rem);
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--font-mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.22em;
+    color:var(--muted);
+  }
+  .slide--dark .masthead{color:rgba(255,255,255,0.5)}
+  .masthead .bullet{display:inline-block;width:6px;height:6px;background:var(--gold);margin-right:.65em;transform:translateY(-1px);vertical-align:middle}
+  .folio{color:var(--gold-darker);font-weight:500}
+  .slide--dark .folio{color:var(--gold)}
+
+  /* Kicker */
+  .kicker{
+    font-family:var(--font-mono);
+    font-size:11px;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.2em;
+    color:var(--gold-darker);
+    display:inline-flex;
+    align-items:center;
+    gap:.75rem;
+    margin-bottom:1.5rem;
+  }
+  .kicker::before{
+    content:'';
+    display:inline-block;
+    width:2rem;
+    height:1px;
+    background:var(--gold);
+  }
+  .slide--dark .kicker{color:var(--gold)}
+
+  /* Rules */
+  .rule-gold{border:0;border-top:1px solid var(--gold);max-width:10rem;margin:2rem 0}
+  .rule-gold--center{margin-left:auto;margin-right:auto}
+  .rule-double{border:0;border-top:1px solid currentColor;border-bottom:1px solid currentColor;height:5px;margin:2.5rem 0}
+
+  /* Fleuron */
+  .fleuron{display:flex;align-items:center;justify-content:center;gap:.85rem;color:var(--gold)}
+  .fleuron::before,.fleuron::after{content:'';display:block;width:2.5rem;height:1px;background:currentColor}
+  .fleuron span{font-family:var(--font-display);font-size:1.5rem;line-height:1}
+
+  /* Drop cap */
+  .drop-cap::first-letter{
+    font-family:var(--font-display);
+    float:left;
+    font-size:4.5rem;
+    line-height:.85;
+    padding:.25rem .55rem 0 0;
+    color:var(--gold);
+    font-weight:500;
+  }
+
+  /* Containers */
+  .container{max-width:76rem;margin:0 auto;width:100%}
+  .narrow{max-width:56rem;margin:0 auto}
+  .prose{font-size:clamp(1rem, 1vw + 0.6rem, 1.1875rem);line-height:1.7}
+  .prose p + p{margin-top:1.1em}
+  .lede{font-size:clamp(1.125rem, 1.2vw + .6rem, 1.4rem);line-height:1.55;color:var(--body);font-family:var(--font-display);font-style:italic}
+
+  /* Cover */
+  .cover{min-height:100vh;padding:0;display:flex;flex-direction:column;justify-content:space-between;background:var(--ink);color:#fff;position:relative;overflow:hidden}
+  .cover::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gold)}
+  .cover::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--gold);opacity:.4;box-shadow:0 4px 0 0 var(--gold)}
+  .cover-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 75% 20%,rgba(184,160,85,.18) 0%,transparent 55%),radial-gradient(ellipse at 15% 85%,rgba(184,160,85,.08) 0%,transparent 50%)}
+  .cover-inner{position:relative;padding:clamp(2rem,5vw,5rem);display:flex;flex-direction:column;justify-content:space-between;flex:1}
+  .cover-top{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:rgba(255,255,255,.6)}
+  .cover-center{display:flex;flex-direction:column;gap:1.5rem;max-width:56rem}
+  .cover-title{font-size:clamp(3rem, 7vw, 6.5rem);line-height:0.98;color:#fff;letter-spacing:-0.025em;font-weight:500}
+  .cover-title em{font-style:italic;color:var(--gold);font-weight:400}
+  .cover-sub{font-size:clamp(1.125rem, 1.5vw + .6rem, 1.625rem);color:rgba(255,255,255,.78);line-height:1.45;max-width:42rem}
+  .cover-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;border-top:1px solid rgba(255,255,255,.15);padding-top:1.5rem;font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.22em;color:rgba(255,255,255,.55)}
+  .cover-sig{font-family:var(--font-display);font-style:italic;font-size:1.25rem;color:var(--gold);text-transform:none;letter-spacing:normal}
+
+  /* Two column */
+  .two-col{display:grid;grid-template-columns:1fr;gap:2.5rem;margin-top:2.5rem}
+  @media (min-width:900px){.two-col{grid-template-columns:1.1fr 0.9fr;gap:4rem}}
+  .two-col-even{display:grid;grid-template-columns:1fr;gap:2.5rem;margin-top:2.5rem}
+  @media (min-width:900px){.two-col-even{grid-template-columns:1fr 1fr;gap:3.5rem}}
+
+  /* Ledger card */
+  .ledger{position:relative;margin-top:2rem;max-width:32rem}
+  .ledger-inner{background:#fff;border:1px solid var(--ink);padding:2rem 2.25rem;position:relative;z-index:1}
+  .ledger::before{content:'';position:absolute;top:.5rem;left:.5rem;right:-.5rem;bottom:-.5rem;background:var(--gold);z-index:0}
+  .ledger-head{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:1rem;border-bottom:2px solid var(--ink);margin-bottom:1rem}
+  .ledger-head .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .ledger-head .title{font-family:var(--font-display);font-size:1.5rem;margin-top:.25rem;color:var(--ink)}
+  .ledger-head .ref{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-darker)}
+  .ledger-row{display:grid;grid-template-columns:1fr auto;gap:1rem;padding:.55rem 0;border-bottom:1px dashed var(--border);font-family:var(--font-mono);font-size:14px;font-variant-numeric:tabular-nums}
+  .ledger-row:last-child{border-bottom:0}
+  .ledger-row.total{padding-top:.85rem;margin-top:.25rem;border-top:1px solid var(--ink);border-bottom:0;font-weight:600;color:var(--ink);font-size:15px}
+
+  /* Running number */
+  .running-num{font-family:var(--font-display);font-size:clamp(3.5rem,6vw,5.5rem);line-height:.9;color:var(--gold);font-variant-numeric:lining-nums;font-weight:400}
+
+  /* Step */
+  .step{display:grid;grid-template-columns:5rem 1fr;gap:1.5rem;padding:2rem 0;border-bottom:1px solid var(--border)}
+  @media (min-width:900px){.step{grid-template-columns:6rem 1fr auto;gap:3rem;padding:2.5rem 0}}
+  .step:last-child{border-bottom:0}
+  .step-meta{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:.5rem;white-space:nowrap}
+  .step-title{font-family:var(--font-display);font-size:clamp(1.25rem,1.5vw + .6rem,1.75rem);color:var(--ink);margin-bottom:.75rem;line-height:1.2}
+  .step-body{font-size:1.0625rem;line-height:1.6;color:var(--body)}
+  .slide--dark .step{border-color:rgba(255,255,255,.12)}
+  .slide--dark .step-title{color:#fff}
+  .slide--dark .step-body{color:rgba(255,255,255,.8)}
+  .slide--dark .step-meta{color:rgba(255,255,255,.5)}
+
+  /* Data grid */
+  .data-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(12rem,1fr));gap:1px;background:var(--border);margin-top:3rem;border:1px solid var(--border)}
+  .data-cell{background:#fff;padding:1.5rem 1.25rem}
+  .data-cell .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+  .data-cell .value{font-family:var(--font-display);font-size:clamp(1.5rem,2vw,2.25rem);color:var(--ink);line-height:1.1;font-variant-numeric:lining-nums;letter-spacing:-0.01em}
+  .data-cell .delta{font-family:var(--font-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-darker);margin-top:.4rem}
+  .slide--dark .data-grid{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.12)}
+  .slide--dark .data-cell{background:var(--ink)}
+  .slide--dark .data-cell .label{color:rgba(255,255,255,.5)}
+  .slide--dark .data-cell .value{color:#fff}
+  .slide--dark .data-cell .delta{color:var(--gold)}
+
+  /* Asset pills */
+  .pill-grid{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:1.75rem}
+  .pill{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:.55rem .9rem;border:1px solid var(--ink);color:var(--ink);background:#fff}
+  .slide--dark .pill{background:transparent;border-color:var(--gold);color:var(--gold)}
+  .pill.gold{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+
+  /* Pull quote */
+  .pull{max-width:48rem;font-family:var(--font-display);font-style:italic;font-size:clamp(1.375rem,2vw + .6rem,2rem);line-height:1.3;color:var(--ink);margin-top:1.5rem}
+  .pull-attr{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.18em;color:var(--muted);margin-top:1.5rem}
+  .slide--dark .pull{color:#fff}
+  .slide--dark .pull-attr{color:rgba(255,255,255,.55)}
+
+  /* Before/After */
+  .vs{display:grid;grid-template-columns:1fr;gap:0;margin-top:2.5rem;border:1px solid var(--ink)}
+  @media (min-width:900px){.vs{grid-template-columns:1fr 1fr}}
+  .vs-col{padding:2rem 2.25rem;background:#fff}
+  .vs-col--after{background:var(--ink);color:#fff}
+  .vs-col--after h3{color:var(--gold)}
+  .vs-col .tag{font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.35rem}
+  .vs-col--after .tag{color:rgba(255,255,255,.55)}
+  .vs-col h3{font-family:var(--font-display);font-size:1.75rem;margin-bottom:1.25rem;font-weight:500}
+  .vs-list{list-style:none;padding:0;margin:0}
+  .vs-list li{padding:.75rem 0;border-bottom:1px dashed var(--border);font-size:1rem;line-height:1.4;display:grid;grid-template-columns:auto 1fr;gap:.75rem}
+  .vs-list li:last-child{border-bottom:0}
+  .vs-list li::before{content:'—';color:var(--muted);font-family:var(--font-mono)}
+  .vs-col--after .vs-list li{border-color:rgba(255,255,255,.12)}
+  .vs-col--after .vs-list li::before{content:'+';color:var(--gold)}
+
+  /* Logo brand mark */
+  .brand-mark{display:inline-block;width:.5rem;height:.5rem;background:var(--gold);transform:rotate(45deg);translate:0 -2px}
+  .brand-word{font-family:var(--font-display);font-weight:600;font-size:1.125rem;color:var(--gold);letter-spacing:-0.01em;margin-left:.5rem;text-transform:none}
+
+  /* Nav / TOC */
+  .nav{position:fixed;right:1.25rem;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:.5rem;opacity:.4;transition:opacity .2s}
+  .nav:hover{opacity:1}
+  .nav a{display:block;width:2px;height:1.25rem;background:var(--muted);border:0;padding:0;transition:background .2s,width .2s}
+  .nav a:hover,.nav a.active{background:var(--gold);width:4px}
+  @media (max-width:700px){.nav{display:none}}
+
+  /* Scroll hint on cover */
+  .scroll-hint{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55);animation:bounce 2s ease-in-out infinite}
+  @keyframes bounce{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,.4rem)}}
+
+  /* Image showcase */
+  .showcase{margin-top:2rem;border:1px solid var(--ink);padding:3px;background:var(--gold)}
+  .showcase img{display:block;width:100%;height:auto;border:1px solid var(--ink)}
+
+  /* Credit */
+  .credit{display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:center;margin-top:1.5rem}
+  .credit-photo{width:3.5rem;height:3.5rem;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+  .credit-text{font-size:.875rem;line-height:1.4}
+  .credit-name{font-family:var(--font-display);font-size:1.0625rem;color:var(--ink)}
+  .slide--dark .credit-name{color:#fff}
+
+  /* Highlight */
+  .hi{background:linear-gradient(transparent 62%,var(--gold-100) 62%);padding:0 .1em}
+  .slide--dark .hi{background:linear-gradient(transparent 62%,rgba(184,160,85,.3) 62%);color:#fff}
+
+  em.gold{color:var(--gold-darker);font-style:italic}
+  .slide--dark em.gold{color:var(--gold)}
+
+  /* CTA footer */
+  .cta-strip{background:var(--ink);color:#fff;padding:4rem clamp(1.5rem,4vw,5rem);text-align:center;border-top:4px solid var(--gold)}
+  .cta-strip h2{color:#fff;margin-bottom:1rem}
+  .cta-strip p{max-width:42rem;margin:0 auto 1.5rem;color:rgba(255,255,255,.78)}
+  .cta-strip a{display:inline-block;margin-top:1rem;padding:1rem 2rem;border:1px solid var(--gold);color:var(--gold);font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;background:transparent}
+  .cta-strip a:hover{background:var(--gold);color:var(--ink)}
+
+  /* Code */
+  code{font-family:var(--font-mono);font-size:.9em;background:var(--gold-50);padding:.1em .4em;border:1px solid var(--border);color:var(--ink-600)}
+  .slide--dark code{background:rgba(184,160,85,.12);border-color:rgba(184,160,85,.3);color:var(--gold)}
+
+  /* Print */
+  @media print{
+    html{scroll-snap-type:none}
+    .slide{page-break-after:always;min-height:100vh}
+    .nav,.scroll-hint{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOC nav -->
+<nav class="nav" aria-label="Slides">
+  <a href="#cover" class="active" aria-label="Cover"></a>
+  <a href="#before" aria-label="Before"></a>
+  <a href="#inputs" aria-label="Inputs"></a>
+  <a href="#scaffold" aria-label="Scaffold"></a>
+  <a href="#seo" aria-label="SEO"></a>
+  <a href="#design" aria-label="Design"></a>
+  <a href="#content" aria-label="Content"></a>
+  <a href="#assets" aria-label="Assets"></a>
+  <a href="#deploy" aria-label="Deploy"></a>
+  <a href="#dns" aria-label="DNS"></a>
+  <a href="#result" aria-label="Result"></a>
+  <a href="#math" aria-label="Math"></a>
+  <a href="#close" aria-label="Close"></a>
+</nav>
+
+<!-- ========== COVER ========== -->
+<section id="cover" class="cover">
+  <div class="cover-bg" aria-hidden="true"></div>
+  <div class="cover-inner">
+    <div class="cover-top">
+      <span><span class="brand-mark"></span><span class="brand-word">Covenant Homes Philly</span></span>
+      <span>Vol. V &middot; No. 2026 &middot; Philadelphia</span>
+    </div>
+    <div class="cover-center">
+      <div class="kicker" style="color:var(--gold)">A Vibe Coding Walkthrough</div>
+      <h1 class="cover-title">From <em>template</em> to<br/>custom, in one<br/>weekend.</h1>
+      <p class="cover-sub">How I rebuilt covenanthomesphilly.com from a $99/month Carrot template into a distinctive Next.js site using Claude Code. 48 hours. Three sessions. Real data. One live website.</p>
+    </div>
+    <div class="cover-bottom">
+      <span>The Build &middot; A field report</span>
+      <span class="cover-sig">— Watson Saintsulne</span>
+    </div>
+  </div>
+  <div class="scroll-hint">Scroll &darr;</div>
+</section>
+
+<!-- ========== 01 BEFORE ========== -->
+<section id="before" class="slide slide--cream">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>THE BEFORE</span>
+    <span class="folio">No. 01 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">The template problem</div>
+    <h2>The Carrot site was <em class="gold">working</em>. It just wasn&rsquo;t <em class="gold">mine</em>.</h2>
+    <hr class="rule-gold" />
+    <div class="narrow prose" style="margin:0">
+      <p class="drop-cap">For four years, I ran my Philadelphia cash home buying business on a Carrot template. It captured leads. The pages loaded. Google crawled them. But every time I opened my site, I saw the same layout a hundred other investors in a hundred other cities were using. Same hero. Same badges. Same tired claims about "fair cash offers" in "any condition."</p>
+      <p>I was paying <span class="hi">$89 to $176 a month</span> for a platform that locked me into its ecosystem. I couldn&rsquo;t add real neighborhood content at the depth I wanted. I couldn&rsquo;t show the real math behind my cash offers. I couldn&rsquo;t tell sellers when <em>not</em> to sell to me &mdash; the one page that most differentiates honest wholesalers from the rest.</p>
+      <p>Philadelphia is specific. Kensington rowhomes aren&rsquo;t Mayfair twins. Code violations in 19134 aren&rsquo;t the same issue as probate in 19144. My template didn&rsquo;t know any of that. So I decided to leave it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 02 INPUTS ========== -->
+<section id="inputs" class="slide slide--white">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>WHAT I BROUGHT IN</span>
+    <span class="folio">No. 02 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">The raw materials</div>
+    <h2>Before I opened Claude Code, I had my <em class="gold">real inputs</em> ready.</h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose">
+        <p>Claude Code is a multiplier, not a magician. The output is only as good as the input. So before I started, I assembled everything real about my business into one folder.</p>
+        <p>I ran deep research on my market using Perplexity. I exported my closed-deal spreadsheet from 2021-2025. I pulled the HUD settlement statement from a recent West Philly deal. I pulled two video testimonials from sellers I&rsquo;d closed for. I gathered my logo files. And I wrote a rules document called <code>CLAUDE.md</code> that locked in my voice, my Fair Housing compliance requirements, and my FinCEN disclosure rules.</p>
+        <p>By the time I pasted the init prompt, I wasn&rsquo;t asking Claude to invent my business. I was asking it to <em>render</em> it.</p>
+      </div>
+      <div>
+        <div class="pill-grid">
+          <span class="pill gold">CLAUDE.md rules file</span>
+          <span class="pill gold">SITE-SPEC.md PRD</span>
+          <span class="pill gold">RESEARCH-SYNTHESIS.md</span>
+          <span class="pill">55-deal CSV (2021-2025)</span>
+          <span class="pill">HUD-1 settlement</span>
+          <span class="pill">2 video transcripts</span>
+          <span class="pill">Covenant logo files</span>
+          <span class="pill">Real Philly rowhome photo</span>
+          <span class="pill">Act Land Services partnership</span>
+          <span class="pill">28-step deal checklist</span>
+        </div>
+        <p class="pull-attr" style="margin-top:2rem">10 inputs &middot; assembled in 2 hours &middot; before Claude Code opened</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 03 SCAFFOLD ========== -->
+<section id="scaffold" class="slide slide--cream">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 01 &middot; SCAFFOLD</span>
+    <span class="folio">No. 03 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">4 hours &middot; Friday night</div>
+    <h2>I pasted the prompt. Claude built the <em class="gold">entire shell</em>.</h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose">
+        <p class="lede">One prompt, one session, 46 routes generated. Next.js 15, Tailwind v4, MDX, TypeScript strict. Every page, every schema builder, every lead form field.</p>
+        <p>Claude read my rules file. It scaffolded the folder structure. It wrote the Zod validation schemas for the lead form. It built the Replica CRM webhook client. It generated typed JSON-LD schema builders for Organization, LocalBusiness, FAQ, Review, Article &mdash; eight different types. It set up the 3-step seller intake form with address autocomplete. It created every page as a typed route with metadata.</p>
+        <p>By the end of the session, I had a working Next.js site with a clean production build, running on <code>localhost:3100</code>.</p>
+      </div>
+      <div>
+        <div class="running-num">01</div>
+        <h3 style="margin-top:1rem">Scaffold everything boring and correct</h3>
+        <p style="margin-top:.75rem">No content yet. No design yet. Just structure. 46 routes, passing tests, passing build.</p>
+        <div class="pill-grid">
+          <span class="pill">Next.js 15 App Router</span>
+          <span class="pill">Tailwind v4</span>
+          <span class="pill">TypeScript strict</span>
+          <span class="pill">MDX content pipeline</span>
+          <span class="pill">Zod schemas</span>
+          <span class="pill">Replica webhook client</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 04 SEO ========== -->
+<section id="seo" class="slide slide--white">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 02 &middot; SEO</span>
+    <span class="folio">No. 04 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">SEO before design</div>
+    <h2>Five SEO skills. Five strategy documents. <em class="gold">Before</em> a pixel moved.</h2>
+    <hr class="rule-gold" />
+    <div class="prose narrow" style="margin-top:1.5rem">
+      <p>Most people build first and SEO-audit later. That gets expensive. Claude Code ships with specialized SEO skills &mdash; I ran five of them against my project before any visual design happened.</p>
+    </div>
+    <div class="data-grid">
+      <div class="data-cell">
+        <div class="label">Skill 01</div>
+        <div class="value">seo-plan</div>
+        <div class="delta">Keyword tiers · content roadmap</div>
+      </div>
+      <div class="data-cell">
+        <div class="label">Skill 02</div>
+        <div class="value">seo-local</div>
+        <div class="delta">GBP playbook · citations · NAP</div>
+      </div>
+      <div class="data-cell">
+        <div class="label">Skill 03</div>
+        <div class="value">seo-programmatic</div>
+        <div class="delta">Swap-test · 18 template pages</div>
+      </div>
+      <div class="data-cell">
+        <div class="label">Skill 04</div>
+        <div class="value">seo-geo</div>
+        <div class="delta">AI Overviews · Perplexity · ChatGPT</div>
+      </div>
+      <div class="data-cell">
+        <div class="label">Skill 05</div>
+        <div class="value">seo-schema</div>
+        <div class="delta">JSON-LD audit · fix queue</div>
+      </div>
+    </div>
+    <p class="pull-attr" style="margin-top:2rem;text-align:center">Every strategy doc shaped the build that followed. No rework.</p>
+  </div>
+</section>
+
+<!-- ========== 05 DESIGN ========== -->
+<section id="design" class="slide slide--dark">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 03 &middot; DESIGN</span>
+    <span class="folio">No. 05 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">The Ledger aesthetic</div>
+    <h2>Most cash-buyer sites look like <em class="gold">SaaS apps</em>. Mine doesn&rsquo;t.</h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose" style="color:rgba(255,255,255,.85)">
+        <p class="lede" style="color:var(--gold)">Editorial broadsheet. 1920s Philly insurance certificate. Not a pitch deck.</p>
+        <p>Claude ran the <code>frontend-design</code> skill after I told it the default scaffold looked too generic. The result was a design direction called &ldquo;The Ledger.&rdquo; Every card is a ruled entry. Every section has a masthead. Running numerals sit in the margins like an editorial article. The offer formula lives inside a hand-stamped ledger card, signed &ldquo;W.S. Philadelphia, PA.&rdquo;</p>
+        <p>Gold is used as <em style="color:var(--gold);font-style:italic">structure</em>, not accent. Hairlines. Drop caps. Rules above kickers. Running numbers. The wordmark. The ornaments.</p>
+      </div>
+      <div class="ledger">
+        <div class="ledger-inner">
+          <div class="ledger-head">
+            <div>
+              <div class="label">Design System</div>
+              <div class="title">The Ledger</div>
+            </div>
+            <div class="ref">Ref. 03</div>
+          </div>
+          <div class="ledger-row"><span>Gold</span><span>#B8A055</span></div>
+          <div class="ledger-row"><span>Ink</span><span>#0A0A0A</span></div>
+          <div class="ledger-row"><span>Cream</span><span>#FAF7EE</span></div>
+          <div class="ledger-row"><span>Display</span><span>Playfair Display</span></div>
+          <div class="ledger-row"><span>Body</span><span>Inter</span></div>
+          <div class="ledger-row"><span>Mono</span><span>JetBrains Mono</span></div>
+          <hr class="rule-double" style="margin:1rem 0 .5rem" />
+          <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);text-align:right">Signed · W.S. · Philadelphia</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 06 CONTENT ========== -->
+<section id="content" class="slide slide--cream">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 04 &middot; CONTENT</span>
+    <span class="folio">No. 06 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">Real data, 5th-grade reading level</div>
+    <h2>30,000 words. Real Philly streets. <em class="gold">Real deal numbers.</em></h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose">
+        <p class="drop-cap">I uploaded my 55-deal spreadsheet and told Claude two rules: write at a fifth-grade reading level, and every neighborhood page must pass the &ldquo;swap test&rdquo; &mdash; if you can swap Kensington for Fishtown and the content still makes sense, rewrite it.</p>
+        <p>The result was <span class="hi">10 neighborhood pages</span> with specific streets, housing stock eras, and typical ARV ranges. <span class="hi">8 situation pages</span> with Pennsylvania-specific legal framework (probate court, sheriff sale timeline, L&amp;I enforcement). A FAQ with 25 questions real sellers have asked me. An anonymized case study from a real West Philly deal. Four blog posts. A transparent offer formula page that publishes the actual 25-55% ARV outcome range most wholesalers hide.</p>
+      </div>
+      <div>
+        <div class="data-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
+          <div class="data-cell"><div class="label">Neighborhood pages</div><div class="value">10</div><div class="delta">1,200+ words each</div></div>
+          <div class="data-cell"><div class="label">Situation pages</div><div class="value">8</div><div class="delta">PA-specific legal</div></div>
+          <div class="data-cell"><div class="label">Blog posts</div><div class="value">4</div><div class="delta">Launch library</div></div>
+          <div class="data-cell"><div class="label">FAQ questions</div><div class="value">25</div><div class="delta">Real seller asks</div></div>
+          <div class="data-cell"><div class="label">Case studies</div><div class="value">1</div><div class="delta">5431 Irving, West Philly</div></div>
+          <div class="data-cell"><div class="label">Reading level</div><div class="value">5th</div><div class="delta">Professional, warm</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 07 ASSETS ========== -->
+<section id="assets" class="slide slide--white">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 05 &middot; REAL ASSETS</span>
+    <span class="folio">No. 07 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">Logos, photos, testimonials</div>
+    <h2>The <em class="gold">humanity</em> behind the pixels.</h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose">
+        <p>No stock houses. No generic handshake photos. I gave Claude my real logo, a real Philly rowhome photograph, and stills from two video testimonials &mdash; Earline, who sold her mother&rsquo;s Strawberry Mansion house, and Jacqueline, who sold her late husband&rsquo;s West Oak Lane rowhome.</p>
+        <p>Claude optimized the images (450KB &rarr; 40KB each), placed them into the editorial testimonial layout with gold hairlines and &ldquo;No. 01&rdquo; / &ldquo;No. 02&rdquo; indices, and pulled quotes from the full transcripts to feature.</p>
+        <p>The testimonials page reads like <em class="gold">closing-day field notes</em>, not marketing copy.</p>
+      </div>
+      <div>
+        <div class="showcase" style="max-width:22rem">
+          <img src="https://covenanthomesphilly.com/brand/logo.png" alt="The Covenant Real Estate Investment Group logo" />
+        </div>
+        <div class="credit">
+          <img src="https://covenanthomesphilly.com/testimonials/earline.jpg" alt="Earline M." class="credit-photo" />
+          <div class="credit-text">
+            <div class="credit-name">Earline M.</div>
+            <div class="pull-attr" style="margin:0">Strawberry Mansion · Closed Sept 2023</div>
+          </div>
+        </div>
+        <div class="credit">
+          <img src="https://covenanthomesphilly.com/testimonials/jackie.jpg" alt="Jacqueline S." class="credit-photo" />
+          <div class="credit-text">
+            <div class="credit-name">Jacqueline S.</div>
+            <div class="pull-attr" style="margin:0">West Oak Lane · Closed July 2023</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 08 DEPLOY ========== -->
+<section id="deploy" class="slide slide--cream">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 06 &middot; DEPLOY</span>
+    <span class="folio">No. 08 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">Claude ran the CLI</div>
+    <h2>I didn&rsquo;t open a dashboard. Claude <em class="gold">deployed for me.</em></h2>
+    <hr class="rule-gold" />
+    <div class="two-col">
+      <div class="prose">
+        <p>Claude used the Vercel CLI and MCP integration to create the project, link the repo, and ship a preview deploy. It hit two real errors along the way &mdash; Hobby tier doesn&rsquo;t allow hourly cron jobs, and the <code>next-mdx-remote</code> package had a known vulnerability. Both fixed inside 60 seconds.</p>
+        <p>Once the preview looked clean, Claude promoted to production and added the custom domain bindings. <span class="hi">52 routes. 102 KB shared JS. Full SSG. 4 dynamic OG image endpoints.</span></p>
+        <p>I was drinking coffee while it happened.</p>
+      </div>
+      <div>
+        <div class="step"><div class="running-num">6.1</div><div><div class="step-title">vercel link &amp; preview</div><div class="step-body">Project created, preview URL live in 90 seconds.</div></div></div>
+        <div class="step"><div class="running-num">6.2</div><div><div class="step-title">Fix hourly cron limit</div><div class="step-body">Hobby tier allows daily only. Adjusted schedule.</div></div></div>
+        <div class="step"><div class="running-num">6.3</div><div><div class="step-title">Upgrade MDX package</div><div class="step-body">CVE flagged. v5 &rarr; v6 in one install.</div></div></div>
+        <div class="step"><div class="running-num">6.4</div><div><div class="step-title">Promote to production</div><div class="step-body">SSL auto-provisioned. Domain bindings added.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 09 DNS ========== -->
+<section id="dns" class="slide slide--dark">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>SESSION 07 &middot; DNS CUTOVER</span>
+    <span class="folio">No. 09 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker" style="color:var(--gold)">The coolest part</div>
+    <h2>Claude used <em style="color:var(--gold);font-style:italic">Playwright</em> to log into GoDaddy and change my DNS.</h2>
+    <hr class="rule-gold" />
+    <div class="narrow prose" style="color:rgba(255,255,255,.85)">
+      <p class="lede" style="color:var(--gold)">I typed my password. Claude did the rest.</p>
+      <p>Browser automation through MCP. Claude opened a Chromium window, navigated to <code>dcc.godaddy.com</code>, identified my 15+ DNS records, and <em style="color:var(--gold);font-style:italic">correctly</em> flagged which ones to change versus which ones to leave alone &mdash; especially my Google Workspace MX records, which would have broken my email if touched.</p>
+      <p>It changed two records: the <code>A</code> record from Carrot&rsquo;s IP to Vercel&rsquo;s <code>76.76.21.21</code>, and the <code>www</code> CNAME from <code>carrot.com</code> to <code>cname.vercel-dns.com</code>. I entered the 2FA codes GoDaddy texted to my phone. Fifteen minutes later, <code>covenanthomesphilly.com</code> resolved to my new site. Email still worked. Nothing broke.</p>
+    </div>
+    <div class="pull-attr" style="margin-top:2rem;text-align:center;color:rgba(255,255,255,.55)">Two records changed. Seven records identified-and-protected. Email fully intact.</div>
+  </div>
+</section>
+
+<!-- ========== 10 RESULT ========== -->
+<section id="result" class="slide slide--white">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>THE RESULT</span>
+    <span class="folio">No. 10 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">Live at covenanthomesphilly.com</div>
+    <h2>52 pages. <em class="gold">Real CRM.</em> Real testimonials. Real leads.</h2>
+    <hr class="rule-gold" />
+    <div class="showcase" style="max-width:48rem;margin:2rem auto 0">
+      <img src="https://covenanthomesphilly.com/hero/philly-rowhomes.jpg" alt="Philadelphia rowhomes — the hero image of covenanthomesphilly.com" />
+    </div>
+    <div class="data-grid" style="margin-top:3rem">
+      <div class="data-cell"><div class="label">Total routes</div><div class="value">52</div><div class="delta">All SSG</div></div>
+      <div class="data-cell"><div class="label">Lighthouse Perf</div><div class="value">95+</div><div class="delta">CI-enforced</div></div>
+      <div class="data-cell"><div class="label">Schema types</div><div class="value">8</div><div class="delta">On every page</div></div>
+      <div class="data-cell"><div class="label">OG images</div><div class="value">Dynamic</div><div class="delta">Per-page auto-gen</div></div>
+      <div class="data-cell"><div class="label">First Load JS</div><div class="value">102 KB</div><div class="delta">Shared chunk</div></div>
+      <div class="data-cell"><div class="label">AI crawler ready</div><div class="value">Yes</div><div class="delta">llms.txt · robots.txt</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 11 MATH ========== -->
+<section id="math" class="slide slide--cream">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>THE MATH</span>
+    <span class="folio">No. 11 / 12</span>
+  </div>
+  <div class="container">
+    <div class="kicker">Before vs after</div>
+    <h2>What I was paying for. What I&rsquo;m <em class="gold">paying for now.</em></h2>
+    <hr class="rule-gold" />
+    <div class="vs">
+      <div class="vs-col">
+        <div class="tag">Before &middot; Carrot template</div>
+        <h3>$99–176 <span style="font-family:var(--font-mono);font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.18em">/ month</span></h3>
+        <ul class="vs-list">
+          <li>Generic template shared with hundreds of investors</li>
+          <li>~15 pages, mostly boilerplate</li>
+          <li>Basic schema markup</li>
+          <li>Limited custom content depth</li>
+          <li>Locked into Carrot ecosystem</li>
+          <li>No editorial design voice</li>
+          <li>No real testimonials wired in</li>
+        </ul>
+      </div>
+      <div class="vs-col vs-col--after">
+        <div class="tag">After &middot; Custom Next.js</div>
+        <h3>~$3 <span style="font-family:var(--font-mono);font-size:1rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.18em">/ month</span></h3>
+        <ul class="vs-list">
+          <li>One-of-a-kind editorial &ldquo;Ledger&rdquo; design</li>
+          <li>52 pages, 30,000+ words of unique Philly content</li>
+          <li>8 schema types on every page + AI crawler-ready</li>
+          <li>Dynamic per-page OG social share images</li>
+          <li>Owned on Vercel, deployed in seconds</li>
+          <li>Real CRM integration (Replica)</li>
+          <li>Real seller testimonials with video stills</li>
+        </ul>
+      </div>
+    </div>
+    <p class="pull-attr" style="margin-top:2.5rem;text-align:center">Savings: <span class="hi">~$1,100/year.</span> Build: <span class="hi">48 hours across 3 sessions.</span> Recouped in month one.</p>
+  </div>
+</section>
+
+<!-- ========== 12 CLOSE ========== -->
+<section id="close" class="slide slide--white">
+  <div class="masthead">
+    <span><span class="brand-mark"></span>THE TAKEAWAY</span>
+    <span class="folio">No. 12 / 12</span>
+  </div>
+  <div class="container" style="text-align:center">
+    <div class="fleuron" aria-hidden="true" style="margin-bottom:2rem"><span>§</span></div>
+    <div class="kicker" style="justify-content:center">One weekend · One site · One seller</div>
+    <h2 style="max-width:48rem;margin:0 auto">The real unlock isn&rsquo;t speed. It&rsquo;s <em class="gold">specificity.</em></h2>
+    <hr class="rule-gold rule-gold--center" />
+    <div class="narrow prose" style="text-align:left">
+      <p>Claude Code can scaffold a site in hours. Anyone can do that. What&rsquo;s harder &mdash; and what matters &mdash; is giving the machine <em>enough of you</em> to produce something that couldn&rsquo;t be produced for anyone else.</p>
+      <p>My site has a page called &ldquo;When Not To Sell To Us.&rdquo; It tells sellers the four situations where I&rsquo;m the wrong buyer and who they should call instead. Most cash buyers would never publish it. The honesty came from me. The rendering came from Claude.</p>
+      <p>The rowhome photo came from a block I&rsquo;ve walked. The West Philly case study uses real HUD numbers from a real deal I closed. The testimonials came from sellers who asked for my help after their family members passed. My voice. My business. My customers.</p>
+      <p><em class="gold">Claude Code gave me a weekend to reclaim all of it from a template.</em></p>
+    </div>
+    <div class="pull-attr" style="margin-top:2.5rem">— Watson Saintsulne, Director of Sales, Covenant Homes Philly</div>
+  </div>
+</section>
+
+<!-- CTA FOOTER -->
+<section class="cta-strip">
+  <div class="kicker" style="justify-content:center;color:var(--gold)">See it live</div>
+  <h2>covenanthomesphilly.com</h2>
+  <p>Built in one weekend with Claude Code. Hosted on Vercel. Honest math, real deals, one tired landlord at a time.</p>
+  <a href="https://covenanthomesphilly.com" target="_blank" rel="noopener">Visit the site →</a>
+</section>
+
+<script>
+  // Active nav dot on scroll
+  const slides = document.querySelectorAll('.slide, .cover');
+  const dots = document.querySelectorAll('.nav a');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        dots.forEach((d) => d.classList.remove('active'));
+        const id = e.target.id;
+        const dot = document.querySelector('.nav a[href="#' + id + '"]');
+        if (dot) dot.classList.add('active');
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach((s) => io.observe(s));
+
+  // Keyboard navigation
+  const sections = Array.from(slides);
+  let current = 0;
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      current = Math.min(current + 1, sections.length - 1);
+      sections[current].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      current = Math.max(current - 1, 0);
+      sections[current].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      current = 0;
+      sections[0].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      current = sections.length - 1;
+      sections[current].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+
+</body>
+</html>

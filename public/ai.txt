@@ -1,0 +1,8 @@
+# ai.txt — AI training / crawling permissions for covenanthomesphilly.com
+
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /thank-you
+
+# Attribution appreciated. Link back to https://covenanthomesphilly.com
